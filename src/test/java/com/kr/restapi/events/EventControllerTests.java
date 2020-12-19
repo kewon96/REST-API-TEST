@@ -1,5 +1,6 @@
 package com.kr.restapi.events;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +9,15 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
+
+import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -31,13 +39,40 @@ public class EventControllerTests {
 
     @Autowired MockMvc mockMvc;
 
+    @Autowired ObjectMapper objectMapper;
+
+    @Autowired private WebApplicationContext context;
+
     @Test
     public void createEvent() throws Exception {
+        Event event = Event.builder()
+                .id(10)
+                .name("Kewon")
+                .description("Test")
+                .beginEnrollmentDateTime(LocalDateTime.of(2020, 12, 19, 21, 8))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 1, 19, 21, 7))
+                .beginEventDateTime(LocalDateTime.of(2021, 1, 20, 10, 0))
+                .endEventDateTime(LocalDateTime.of(2021, 1, 20, 17, 0))
+                .basePrice(10000)
+                .maxPrice(20000)
+                .limitOfEnrollment(10000)
+                .location("삼성역")
+                .build();
+
+        // MockMvc setting
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .addFilter(new CharacterEncodingFilter("UTF-8", true))
+                .alwaysDo(print())
+                .build();
+
         mockMvc.perform(post("/api/events/") // perform parameter는 request
                     .contentType(MediaType.APPLICATION_JSON) // 요청형식 : JSON, APPLICATION_JSON_UTF8은 이제 사용되지 않음
                     .accept(MediaTypes.HAL_JSON) // HAL JSON형식의 응답을 원한다
+                    .content(objectMapper.writeValueAsString(event))
                 )
-                .andExpect(status().isCreated()); // response ==> .andExpect(status().is(201));
+                .andExpect(status().isCreated()) // response ==> .andExpect(status().is(201));
+                .andExpect(jsonPath("id").exists()) // id 여부 확인
+        ;
 
     }
 
