@@ -2,6 +2,7 @@ package com.kr.restapi.events;
 
 import lombok.*;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
@@ -12,15 +13,22 @@ import java.time.LocalDateTime;
  *     2. SQL상에서 Primary Key를 생각하면 이해하기 쉽다.
  * 3. 밑의 많은 Annotation을 줄이기 위해 "@Data"라는 Annotation이 존재한다.
  *     하지만 사용하지 않는 이유는 사용 시 EqualsAndHashCode를 모든 필드를 호출하기 때문에 사용하지 않는다.
+ * 5. Event를 Entity로 선언하기 위해 @Entity를 달아주고 id가 식별자로 하기위해 @Id, @GeneratedValue를 달아준다.
+ * 6. eventStatus의 이름값 그대로 저장하기 위해 @Enumerated(EnumType.STRING)을 붙인다.
+ *     순서값을 저장하기 위해선 "STRING"을 "ORDINAL"로 변경
  * </pre>
  */
-@Builder @AllArgsConstructor @NoArgsConstructor
+@Builder @AllArgsConstructor @NoArgsConstructor @ToString
 @Getter @Setter @EqualsAndHashCode(of = "id")
+@Entity
 public class Event {
+
+    @Id @GeneratedValue
     private Integer id;
 
     private boolean offline; // online, offline 여부
     private boolean free; // 이벤트 유/무료 여부
+    @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
     private String name;                                  // 이벤트 이름
     private String description;                           // 설명

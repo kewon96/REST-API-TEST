@@ -1,5 +1,7 @@
 package com.kr.restapi.events;
 
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,25 +12,25 @@ import org.springframework.web.bind.annotation.RestController;
 import java.net.URI;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-//import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-/**
- * 객체를 body에 담거나 header정보 등을 setting하기 위해 ResponseEntity를 return
- */
+
 @RestController
 @RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE)
 public class EventController {
 
-    @PostMapping("")
-    public ResponseEntity createEvent(@RequestBody Event event) {
-        URI createdUri = linkTo(EventController.class)
-                             .slash("#{id}")
-                             .toUri();
-//        URI createdUri = linkTo(methodOn(EventController.class).createEvent(Event.builder().build()))
-//                .slash("#{id}")
-//                .toUri();
+    private final EventRepository eventRepository;
 
-//        event.setId(10);
+    public EventController(EventRepository eventRepository) {
+        this.eventRepository = eventRepository;
+    }
+
+    @PostMapping
+    public ResponseEntity createEvent(@RequestBody Event event) {
+        Event newEvent = this.eventRepository.save(event); // 저장된 Entity
+
+        URI createdUri = linkTo(EventController.class)
+                             .slash(newEvent.getId())
+                             .toUri();
 
         return ResponseEntity.created(createdUri) // Header의 Location 정보안에 createUri를 이식
                 .body(event);                     // 받아온 event를 이식
