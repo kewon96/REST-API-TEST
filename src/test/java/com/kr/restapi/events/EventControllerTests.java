@@ -1,11 +1,14 @@
 package com.kr.restapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
@@ -37,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * </pre>
  */
 @ExtendWith(SpringExtension.class)
-@WebMvcTest
+@SpringBootTest @AutoConfigureMockMvc
 public class EventControllerTests {
 
     @Autowired MockMvc mockMvc;
@@ -46,11 +49,12 @@ public class EventControllerTests {
 
     @Autowired private WebApplicationContext context;
 
-    @MockBean EventRepository eventRepository; // Mock이라서 return되는 존재가 null이다
+    // @MockBean EventRepository eventRepository; // Mock이라서 return되는 존재가 null이다
 
     @Test
     public void createEvent() throws Exception {
         Event event = Event.builder()
+                .id(100)
                 .name("Kewon")
                 .description("Test")
                 .beginEnrollmentDateTime(LocalDateTime.of(2020, 12, 19, 21, 8))
@@ -61,11 +65,13 @@ public class EventControllerTests {
                 .maxPrice(20000)
                 .limitOfEnrollment(10000)
                 .location("삼성역")
+                .free(true)
+                .offline(false)
+                .eventStatus(EventStatus.PUBLISHED)
                 .build();
-        event.setId(10);
 
         // eventRepository.save(event)가 호출이 되면 event를 return하라
-        Mockito.when(eventRepository.save(event)).thenReturn(event);
+        // Mockito.when(eventRepository.save(event)).thenReturn(event);
 
         // MockMvc setting
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
@@ -83,6 +89,9 @@ public class EventControllerTests {
                 // Spring Boot 2.2.0부터 MockMvc에서 UTF-8문자를 처리하지 않음
                 // https://qastack.kr/programming/58525387/mockmvc-no-longer-handles-utf-8-characters-with-spring-boot-2-2-0-release
                 .andExpect(header().string("Content-Type", "application/hal+json;charset=UTF-8")) // Content-Type이 hal json형식인지
+                .andExpect(jsonPath("id").value(Matchers.not(100)))
+                .andExpect(jsonPath("free").value(Matchers.not(true)))
+                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
         ;
     }
 }
