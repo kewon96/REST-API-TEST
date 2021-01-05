@@ -17,7 +17,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
-import java.util.logging.Logger;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -96,7 +95,6 @@ public class EventControllerTests {
      * Id나 free등 입력되면 안되는 값이 넘어올 시 Bad Request를 보여줌
      * 입력받은 값(JSON) -> Entity
      * application.properties에서 spring.jackson.deserialization.fail-on-unknown-properties값을 true로 변경
-     * @throws Exception
      */
     @Test
     public void createEvent_Bad_Request() throws Exception {
@@ -137,7 +135,6 @@ public class EventControllerTests {
      * Id나 free등 입력되면 안되는 값이 넘어올 시 무시
      * 입력받은 값(JSON) -> Entity
      * application.properties에서 spring.jackson.deserialization.fail-on-unknown-properties값을 false로 변경
-     * @throws Exception
      */
     @Test
     public void createEvent_Ignore_other_then_Input() throws Exception {
