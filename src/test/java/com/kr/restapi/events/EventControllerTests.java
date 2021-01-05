@@ -4,12 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,6 +17,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
+import java.util.logging.Logger;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -53,8 +51,7 @@ public class EventControllerTests {
 
     @Test
     public void createEvent() throws Exception {
-        Event event = Event.builder()
-                .id(100)
+        EventDto event = EventDto.builder()
                 .name("Kewon")
                 .description("Test")
                 .beginEnrollmentDateTime(LocalDateTime.of(2020, 12, 19, 21, 8))
@@ -65,9 +62,6 @@ public class EventControllerTests {
                 .maxPrice(20000)
                 .limitOfEnrollment(10000)
                 .location("삼성역")
-                .free(true)
-                .offline(false)
-                .eventStatus(EventStatus.PUBLISHED)
                 .build();
 
         // eventRepository.save(event)가 호출이 되면 event를 return하라
@@ -93,5 +87,90 @@ public class EventControllerTests {
                 .andExpect(jsonPath("free").value(Matchers.not(true)))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
         ;
+
+        System.out.println("Create Event");
+
+    }
+
+    /**
+     * Id나 free등 입력되면 안되는 값이 넘어올 시 Bad Request를 보여줌
+     * 입력받은 값(JSON) -> Entity
+     * application.properties에서 spring.jackson.deserialization.fail-on-unknown-properties값을 true로 변경
+     * @throws Exception
+     */
+    @Test
+    public void createEvent_Bad_Request() throws Exception {
+        Event event = Event.builder()
+                .id(100)
+                .name("Kewon")
+                .description("Test")
+                .beginEnrollmentDateTime(LocalDateTime.of(2020, 12, 19, 21, 8))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 1, 19, 21, 7))
+                .beginEventDateTime(LocalDateTime.of(2021, 1, 20, 10, 0))
+                .endEventDateTime(LocalDateTime.of(2021, 1, 20, 17, 0))
+                .basePrice(10000)
+                .maxPrice(20000)
+                .limitOfEnrollment(10000)
+                .location("삼성역")
+                .free(true)
+                .offline(false)
+                .eventStatus(EventStatus.PUBLISHED)
+                .build();
+
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .addFilter(new CharacterEncodingFilter("UTF-8", true))
+                .alwaysDo(print())
+                .build();
+
+        mockMvc.perform(post("/api/events/")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaTypes.HAL_JSON)
+                    .content(objectMapper.writeValueAsString(event)))
+                .andExpect(status().isBadRequest())
+        ;
+
+        System.out.println("Bad Request");
+
+    }
+
+    /**
+     * Id나 free등 입력되면 안되는 값이 넘어올 시 무시
+     * 입력받은 값(JSON) -> Entity
+     * application.properties에서 spring.jackson.deserialization.fail-on-unknown-properties값을 false로 변경
+     * @throws Exception
+     */
+    @Test
+    public void createEvent_Ignore_other_then_Input() throws Exception {
+        Event event = Event.builder()
+                .id(100)
+                .name("Kewon")
+                .description("Test")
+                .beginEnrollmentDateTime(LocalDateTime.of(2020, 12, 19, 21, 8))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 1, 19, 21, 7))
+                .beginEventDateTime(LocalDateTime.of(2021, 1, 20, 10, 0))
+                .endEventDateTime(LocalDateTime.of(2021, 1, 20, 17, 0))
+                .basePrice(10000)
+                .maxPrice(20000)
+                .limitOfEnrollment(10000)
+                .location("삼성역")
+                .free(true)
+                .offline(false)
+                .eventStatus(EventStatus.PUBLISHED)
+                .build();
+
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .addFilter(new CharacterEncodingFilter("UTF-8", true))
+                .alwaysDo(print())
+                .build();
+
+        mockMvc.perform(post("/api/events/")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaTypes.HAL_JSON)
+                    .content(objectMapper.writeValueAsString(event)))
+                .andExpect(status().isCreated())
+        ;
+
+        System.out.println("Ignore");
+
     }
 }
