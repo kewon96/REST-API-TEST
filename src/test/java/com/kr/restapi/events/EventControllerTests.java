@@ -40,11 +40,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest @AutoConfigureMockMvc
 public class EventControllerTests {
 
+    @Autowired private WebApplicationContext context;
+
+    // MockMvc setting
     @Autowired MockMvc mockMvc;
 
     @Autowired ObjectMapper objectMapper;
 
-    @Autowired private WebApplicationContext context;
+
 
     // @MockBean EventRepository eventRepository; // Mock이라서 return되는 존재가 null이다
 
@@ -66,11 +69,11 @@ public class EventControllerTests {
         // eventRepository.save(event)가 호출이 되면 event를 return하라
         // Mockito.when(eventRepository.save(event)).thenReturn(event);
 
-        // MockMvc setting
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
                 .addFilter(new CharacterEncodingFilter("UTF-8", true))
                 .alwaysDo(print())
                 .build();
+
 
         mockMvc.perform(post("/api/events/") // perform parameter는 request
                     .contentType(MediaType.APPLICATION_JSON) // 요청형식 : JSON, APPLICATION_JSON_UTF8은 이제 사용되지 않음
@@ -169,5 +172,22 @@ public class EventControllerTests {
 
         System.out.println("Ignore");
 
+    }
+
+    @Test
+    public void createEvent_Bad_Request_Empty_Input() throws Exception {
+        EventDto eventDto = EventDto.builder().build();
+
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .addFilter(new CharacterEncodingFilter("UTF-8", true))
+                .alwaysDo(print())
+                .build();
+
+        mockMvc.perform(post("/api/events/")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaTypes.HAL_JSON)
+                    .content(objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isCreated())
+        ;
     }
 }
