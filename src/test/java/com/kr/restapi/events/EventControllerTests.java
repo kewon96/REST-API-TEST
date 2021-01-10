@@ -174,6 +174,10 @@ public class EventControllerTests {
 
     }
 
+    /**
+     * 값이 비어있는 경우
+     * @throws Exception
+     */
     @Test
     public void createEvent_Bad_Request_Empty_Input() throws Exception {
         EventDto eventDto = EventDto.builder().build();
@@ -188,6 +192,38 @@ public class EventControllerTests {
                     .accept(MediaTypes.HAL_JSON)
                     .content(objectMapper.writeValueAsString(eventDto)))
                 .andExpect(status().isCreated())
+        ;
+    }
+
+    /**
+     * 값이 잘못된 경우
+     * @throws Exception
+     */
+    @Test
+    public void createEvent_Bad_Request_Wrong_Input() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                .name("Kewon")
+                .description("Test")
+                .beginEnrollmentDateTime(LocalDateTime.of(2020, 12, 19, 21, 8))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 12, 10, 10, 7))
+                .beginEventDateTime(LocalDateTime.of(2021, 1, 20, 10, 0))
+                .endEventDateTime(LocalDateTime.of(2021, 1, 18, 17, 0))
+                .basePrice(10000)
+                .maxPrice(200)
+                .limitOfEnrollment(10000)
+                .location("삼성역")
+                .build();
+
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .addFilter(new CharacterEncodingFilter("UTF-8", true))
+                .alwaysDo(print())
+                .build();
+
+        mockMvc.perform(post("/api/events/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(eventDto)))
+            .andExpect(status().isBadRequest())
         ;
     }
 }
