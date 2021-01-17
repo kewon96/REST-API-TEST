@@ -50,7 +50,9 @@ public class Event {
         }
 
         // Update offline : 장소값이 있으면 offline 형태
-        if(this.location != null || !this.location.isBlank()) { // java 8: this.location.trim().isEmpty()
+        if(this.location == null || this.location.isBlank()) { // java 8: this.location.trim().isEmpty()
+            this.offline = false;
+        } else {
             this.offline = true;
         }
     }

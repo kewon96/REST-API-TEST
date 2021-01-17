@@ -1,9 +1,16 @@
 package com.kr.restapi.events;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.runner.RunWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+//@RunWith(JUnitParamsRunner.class)
 public class EventTest {
     @Test
     public void builder() {
@@ -30,47 +37,53 @@ public class EventTest {
         assertThat(event.getDescription()).isEqualTo(description);
     }
 
-    @Test
-    public void testFree() {
+    @ParameterizedTest(name = "{index} => basePrice={0}, maxPrice={1}, isFree={2}")
+    @MethodSource
+    public void testFree(int basePrice, int maxPrice, boolean isFree) {
         /* Event의 basePrice, maxPrice가 0이면 무료 */
         // Given
         Event event = Event.builder()
-                .basePrice(0)
-                .maxPrice(0)
+                .basePrice(basePrice)
+                .maxPrice(maxPrice)
                 .build();
 
         // When
         event.update();
 
         // Then
-        assertThat(event.isFree()).isTrue();
+        assertThat(event.isFree()).isEqualTo(isFree);
+    }
 
+    // static 있어야 동작
+    private static Object[] testFree() {
+        return new Object[]{
+            new Object[]{0, 0, true},
+            new Object[]{100, 0, false},
+            new Object[]{0, 100, false}
+        };
+    }
 
-        /* Event의 basePrice가 존재하면 유료 */
+    @ParameterizedTest(name = "{index} => location={0}, isOffline={1}")
+    @MethodSource
+    public void testOffline(String location, boolean isOffline) {
+        /* Event의 basePrice, maxPrice가 0이면 무료 */
         // Given
-        event = Event.builder()
-                .basePrice(10000)
-                .maxPrice(0)
+        Event event = Event.builder()
+                .location(location)
                 .build();
 
         // When
         event.update();
 
         // Then
-        assertThat(event.isFree()).isFalse();
+        assertThat(event.isOffline()).isEqualTo(isOffline);
+    }
 
-
-        /* Event의 maxPrice가 존재하면 유료 */
-        // Given
-        event = Event.builder()
-                .basePrice(0)
-                .maxPrice(10000)
-                .build();
-
-        // When
-        event.update();
-
-        // Then
-        assertThat(event.isFree()).isFalse();
+    private static Object[] testOffline() {
+        return new Object[]{
+                new Object[]{"강남역 메리츠타워", true},
+                new Object[]{"", false},
+                new Object[]{null, false}
+        };
     }
 }
