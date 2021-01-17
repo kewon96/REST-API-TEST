@@ -43,12 +43,14 @@ public class EventController {
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
         // 만약 errors에 error가 존재하면 해당 Bad Request를 return시킨다.
         if(errors.hasErrors()) {
-            return ResponseEntity.badRequest().build();
+            // errors 객체는 json으로 변환이 되지않는다.
+            return ResponseEntity.badRequest().body(errors);
         }
 
+        // validate를 타게 해서 error가 존재 시 errors에 담아줌
         eventValidator.validate(eventDto, errors);
         if(errors.hasErrors()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(errors);
         }
 
         Event event = modelMapper.map(eventDto, Event.class);

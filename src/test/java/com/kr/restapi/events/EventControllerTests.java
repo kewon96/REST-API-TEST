@@ -1,12 +1,14 @@
 package com.kr.restapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kr.restapi.common.TestDescription;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Description;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -52,6 +54,7 @@ public class EventControllerTests {
     // @MockBean EventRepository eventRepository; // Mock이라서 return되는 존재가 null이다
 
     @Test
+    @TestDescription("정상적으로 이벤트를 생성하는 테스트")
     public void createEvent() throws Exception {
         EventDto event = EventDto.builder()
                 .name("Kewon")
@@ -100,6 +103,7 @@ public class EventControllerTests {
      * application.properties에서 spring.jackson.deserialization.fail-on-unknown-properties값을 true로 변경
      */
     @Test
+    @TestDescription("입력 받을 수 없는 값을 사용한 경우 Bad Request Test")
     public void createEvent_Bad_Request() throws Exception {
         Event event = Event.builder()
                 .id(100)
@@ -176,9 +180,9 @@ public class EventControllerTests {
 
     /**
      * 값이 비어있는 경우
-     * @throws Exception
      */
     @Test
+    @TestDescription("입력 받아야 하는 값이 비어있는 경우 Bad Request Test")
     public void createEvent_Bad_Request_Empty_Input() throws Exception {
         EventDto eventDto = EventDto.builder().build();
 
@@ -197,9 +201,9 @@ public class EventControllerTests {
 
     /**
      * 값이 잘못된 경우
-     * @throws Exception
      */
     @Test
+    @Description("입력 받아야 하는 값이 잘못된 경우 Bad Request Test")
     public void createEvent_Bad_Request_Wrong_Input() throws Exception {
         EventDto eventDto = EventDto.builder()
                 .name("Kewon")
@@ -220,10 +224,16 @@ public class EventControllerTests {
                 .build();
 
         mockMvc.perform(post("/api/events/")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaTypes.HAL_JSON)
-                .content(objectMapper.writeValueAsString(eventDto)))
-            .andExpect(status().isBadRequest())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaTypes.HAL_JSON)
+                    .content(objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest())
+                // 응답에 포함시킴
+                .andExpect(jsonPath("$[0].objectName").exists())
+                .andExpect(jsonPath("$[0].field").exists())
+                .andExpect(jsonPath("$[0].defaultMessage").exists())
+                .andExpect(jsonPath("$[0].code").exists())
+                .andExpect(jsonPath("$[0].rejectValue").exists())
         ;
     }
 }
