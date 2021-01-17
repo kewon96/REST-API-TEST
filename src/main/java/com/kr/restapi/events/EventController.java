@@ -54,6 +54,7 @@ public class EventController {
         }
 
         Event event = modelMapper.map(eventDto, Event.class);
+        event.update(); // Event로 제작 후 free, offline 이식
         Event newEvent = this.eventRepository.save(event); // 저장된 Entity
 
         URI createdUri = linkTo(EventController.class)

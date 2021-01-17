@@ -88,8 +88,8 @@ public class EventControllerTests {
                 // Spring Boot 2.2.0부터 MockMvc에서 UTF-8문자를 처리하지 않음
                 // https://qastack.kr/programming/58525387/mockmvc-no-longer-handles-utf-8-characters-with-spring-boot-2-2-0-release
                 .andExpect(header().string("Content-Type", "application/hal+json;charset=UTF-8")) // Content-Type이 hal json형식인지
-                .andExpect(jsonPath("id").value(Matchers.not(100)))
-                .andExpect(jsonPath("free").value(Matchers.not(true)))
+                .andExpect(jsonPath("free").value(false))
+                .andExpect(jsonPath("offline").value(true))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
         ;
 

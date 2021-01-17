@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * <pre>
@@ -41,5 +42,16 @@ public class Event {
     private int maxPrice;                                 // (optional) 등록비
     private int limitOfEnrollment;                        // 제한 인원
 
+    /** free, offlie update */
+    public void update() {
+        // Update free : basePrice와 maxPrice값이 0이라면 무료
+        if(this.basePrice == 0 && this.maxPrice == 0) {
+            this.free = true;
+        }
 
+        // Update offline : 장소값이 있으면 offline 형태
+        if(this.location != null || !this.location.isBlank()) { // java 8: this.location.trim().isEmpty()
+            this.offline = true;
+        }
+    }
 }
