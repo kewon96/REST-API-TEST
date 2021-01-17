@@ -1,16 +1,11 @@
 package com.kr.restapi.events;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-//@RunWith(JUnitParamsRunner.class)
 public class EventTest {
     @Test
     public void builder() {
@@ -57,9 +52,9 @@ public class EventTest {
     // static 있어야 동작
     private static Object[] testFree() {
         return new Object[]{
-            new Object[]{0, 0, true},
-            new Object[]{100, 0, false},
-            new Object[]{0, 100, false}
+                new Object[]{0, 0, true},
+                new Object[]{100, 0, false},
+                new Object[]{0, 100, false}
         };
     }
 
