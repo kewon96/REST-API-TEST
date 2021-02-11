@@ -2,7 +2,6 @@ package com.kr.restapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kr.restapi.common.TestDescription;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,9 +90,12 @@ public class EventControllerTests {
                 .andExpect(jsonPath("free").value(false))
                 .andExpect(jsonPath("offline").value(true))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
+                .andExpect(jsonPath("_links.self").exists())   // 존재하는지
+                .andExpect(jsonPath("_links.query-events").exists()) // 이벤트 목록으로
+                .andExpect(jsonPath("_links.update-event").exists()) // 이벤트 수정으로
         ;
 
-        System.out.println("Create Event");
+
 
     }
 
